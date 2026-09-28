@@ -26,6 +26,7 @@
   --accent: #63f0bd;
   --accent-2: #93b4ff;
   --accent-3: #ffbe7a;
+  --warn: #ff9a8a;
   --r-sm: 12px;
   --r-md: 18px;
   --r-lg: 26px;
@@ -491,6 +492,71 @@ a {
 
 /* ------------------------------------------------------------------ pricing */
 
+/* ----------------------------------------------------------------- the offer */
+
+/* A bar that is always on screen, because the deadline is the whole argument.
+   Sticky under the nav so the clock is never more than a glance away. */
+.offer {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  padding: 0.55rem 1rem;
+  text-align: center;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border-bottom: 1px solid var(--edge-soft);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.offer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  max-width: var(--shell);
+  margin: 0 auto;
+  font-size: 0.86rem;
+}
+
+.offer-tag {
+  padding: 0.12rem 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #06090c;
+  background: var(--text);
+  border-radius: 999px;
+}
+
+.offer-copy {
+  color: var(--dim);
+}
+
+.offer-timer {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.18rem;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.offer-timer i {
+  font-style: normal;
+  font-size: 0.66rem;
+  color: var(--faint);
+  margin-right: 0.3rem;
+}
+
+.offer-timer.is-over {
+  color: var(--faint);
+}
+
+/* ------------------------------------------------------------------ pricing */
+
 .plans {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
@@ -501,6 +567,8 @@ a {
 
 .plan {
   text-align: left;
+  display: flex;
+  flex-direction: column;
 }
 
 .plan h3 {
@@ -514,6 +582,18 @@ a {
   margin: 0;
   font-size: 0.9rem;
   color: var(--dim);
+}
+
+.plan-was {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  color: var(--faint);
+  text-decoration: line-through;
+}
+
+.plan-was[hidden] {
+  display: none;
 }
 
 .plan-price span {
@@ -530,6 +610,42 @@ a {
   margin: 0.7rem 0 0;
   font-size: 0.85rem;
   color: var(--faint);
+}
+
+.plan ul {
+  margin: 1rem 0 1.3rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--dim);
+}
+
+.plan li {
+  position: relative;
+  padding-left: 1.3rem;
+}
+
+.plan li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 0.7rem;
+  height: 0.35rem;
+  border-left: 1.5px solid var(--accent);
+  border-bottom: 1.5px solid var(--accent);
+  transform: rotate(-45deg);
+}
+
+.plan-buy {
+  margin-top: auto;
+  justify-content: center;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #06090c;
 }
 
 .plan-featured {
@@ -553,6 +669,56 @@ a {
   border-radius: 999px;
 }
 
+/* -------------------------------------------------------------------- proof */
+
+/* Three answers to the three questions that stop a sale: what if I hate it, how
+   do I try it, and is this going to install something. */
+.proof {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.proof-card {
+  padding: 1.5rem 1.5rem 1.4rem;
+  background: var(--panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-lg);
+  box-shadow: var(--inner-top);
+}
+
+.proof-num {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  background: linear-gradient(160deg, #ffffff, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.proof-label {
+  margin: 0.4rem 0 0;
+  font-weight: 500;
+}
+
+.proof-note {
+  margin: 0.5rem 0 1.2rem;
+  font-size: 0.86rem;
+  color: var(--dim);
+}
+
+.proof-buy {
+  font: inherit;
+  font-size: 0.88rem;
+}
+
 .download {
   margin-top: 2.6rem;
   padding: 2rem 1.8rem;
@@ -569,6 +735,177 @@ a {
   max-width: 52ch;
   margin: 0 auto 1.4rem;
   color: var(--dim);
+}
+
+.download-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  justify-content: center;
+}
+
+.section-lead {
+  max-width: 58ch;
+  color: var(--dim);
+}
+
+/* -------------------------------------------------------------------- sheet */
+
+.sheet {
+  width: min(28rem, calc(100vw - 2rem));
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: none;
+}
+
+.sheet::backdrop {
+  background: rgba(2, 3, 4, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.sheet-inner {
+  position: relative;
+  padding: 1.9rem 1.8rem 1.6rem;
+  background: linear-gradient(158deg, rgba(20, 21, 23, 0.98), rgba(10, 11, 12, 0.98));
+  border: 1px solid var(--edge);
+  border-radius: var(--r-lg);
+  box-shadow: 0 40px 100px -40px rgba(0, 0, 0, 0.95);
+}
+
+.sheet h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.sheet-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.9rem;
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--dim);
+  background: transparent;
+  border: 1px solid var(--edge-soft);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.sheet-close:hover {
+  color: var(--text);
+  border-color: var(--edge);
+}
+
+.sheet-lede {
+  margin: 0 0 1.3rem;
+  font-size: 0.92rem;
+  color: var(--dim);
+}
+
+.sheet-form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  color: var(--dim);
+}
+
+.field input {
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  font-size: 0.94rem;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid var(--edge-soft);
+  border-radius: 12px;
+  outline: none;
+}
+
+.field input:focus {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.sheet-note {
+  margin: 0;
+  min-height: 1.2rem;
+  font-size: 0.82rem;
+  color: var(--dim);
+}
+
+.sheet-note[data-kind='error'] {
+  color: var(--warn);
+}
+
+.sheet-alt {
+  margin: 1.1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--faint);
+  text-align: center;
+}
+
+.linkish {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.sheet-fine {
+  margin: 1.2rem 0 0;
+  font-size: 0.76rem;
+  color: var(--faint);
+  text-align: center;
+}
+
+.licence-box {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.licence-card {
+  padding: 0.9rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--edge-soft);
+  border-radius: var(--r-sm);
+}
+
+.licence-id {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.84rem;
+}
+
+.licence-plan,
+.licence-expires {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--dim);
+}
+
+.licence-empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--faint);
 }
 
 /* --------------------------------------------------------------- split, faq */

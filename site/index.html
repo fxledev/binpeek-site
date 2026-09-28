@@ -17,6 +17,18 @@
   </head>
   <body>
     <div class="backdrop" aria-hidden="true"></div>
+    <div class="offer" role="region" aria-label="limited offer">
+      <div class="offer-inner">
+        <span class="offer-tag">launch offer</span>
+        <span class="offer-copy">30% off every plan until the clock runs out</span>
+        <span class="offer-timer" data-countdown="2026-10-14T23:59:59Z" aria-live="polite">
+          <span data-unit="d">--</span><i>d</i>
+          <span data-unit="h">--</span><i>h</i>
+          <span data-unit="m">--</span><i>m</i>
+          <span data-unit="s">--</span><i>s</i>
+        </span>
+      </div>
+    </div>
     <header class="nav">
       <a class="nav-brand" href="#top">
         <span class="nav-mark" aria-hidden="true"></span>
@@ -129,51 +141,104 @@
 
       <section id="pricing" class="section">
         <h2>Pay once if you can, subscribe if you want the updates</h2>
+        <p class="section-lead">
+          Every plan is 30% off while the launch clock is running. The price you
+          see below is the price you pay, and it goes back up the moment it hits
+          zero.
+        </p>
         <div class="plans">
-          <article class="plan" data-spotlight>
+          <article class="plan" data-plan="monthly" data-spotlight>
             <h3>Monthly</h3>
-            <p class="plan-price"><span>$5.99</span> per month</p>
+            <p class="plan-price">
+              <s class="plan-was" data-was="$5.99">$5.99</s>
+              <span data-price="4.19">$4.19</span>
+            </p>
             <p class="plan-note">Cancel whenever. Includes support.</p>
             <ul>
-              <li>The app, all three tools</li>
+              <li>The app, every engine in it</li>
               <li>Every update while you are subscribed</li>
               <li>Email support</li>
             </ul>
+            <button class="btn btn-primary plan-buy" data-buy="monthly" type="button">Buy monthly</button>
           </article>
-          <article class="plan" data-spotlight>
+          <article class="plan" data-plan="annual" data-spotlight>
             <h3>Annual</h3>
-            <p class="plan-price"><span>$27</span> per year</p>
+            <p class="plan-price">
+              <s class="plan-was" data-was="$27">$27</s>
+              <span data-price="18.90">$18.90</span>
+            </p>
             <p class="plan-note">Ten percent under the lifetime price.</p>
             <ul>
-              <li>The app, all three tools</li>
+              <li>The app, every engine in it</li>
               <li>Twelve months of updates</li>
               <li>Email support</li>
             </ul>
+            <button class="btn btn-primary plan-buy" data-buy="annual" type="button">Buy annual</button>
           </article>
-          <article class="plan plan-featured" data-spotlight>
+          <article class="plan plan-featured" data-plan="lifetime" data-spotlight>
             <p class="plan-flag">best value</p>
             <h3>Lifetime</h3>
-            <p class="plan-price"><span>$29.99</span> once</p>
+            <p class="plan-price">
+              <s class="plan-was" data-was="$29.99">$29.99</s>
+              <span data-price="20.99">$20.99</span>
+            </p>
             <p class="plan-note">Pay once. It keeps working.</p>
             <ul>
-              <li>The app, all three tools</li>
+              <li>The app, every engine in it</li>
               <li>Every update, forever</li>
               <li>Priority support</li>
             </ul>
+            <button class="btn btn-primary plan-buy" data-buy="lifetime" type="button">Buy lifetime</button>
           </article>
         </div>
+
+        <div class="proof">
+          <article class="proof-card">
+            <p class="proof-num" data-count="7">7</p>
+            <p class="proof-label">day evaluation licence</p>
+            <p class="proof-note">
+              Try every engine for a week. No card, no account, and it stops on its own.
+            </p>
+            <button class="btn btn-ghost proof-buy" data-buy="trial" type="button">Start the 7 day trial</button>
+          </article>
+          <article class="proof-card">
+            <p class="proof-num" data-count="14">14</p>
+            <p class="proof-label">refund days, no questions</p>
+            <p class="proof-note">
+              If it does not read a jar you needed it to read, tell us and the money comes back.
+            </p>
+            <a class="btn btn-ghost" href="mailto:support.binpeek@gmail.com?subject=refund request">Ask for a refund</a>
+          </article>
+          <article class="proof-card">
+            <p class="proof-num" data-count="1">1</p>
+            <p class="proof-label">file, no installer, no admin</p>
+            <p class="proof-note">
+              Unzip, run it, delete it. Nothing is installed and nothing keeps running behind you.
+            </p>
+            <a class="btn btn-ghost" href="mailto:support.binpeek@gmail.com?subject=binpeek question">Ask anything</a>
+          </article>
+        </div>
+
         <div class="download">
           <div>
             <h3>Already bought it?</h3>
             <p class="body">
-              The download link is emailed to you after the payment clears. It is signed,
-              it expires, and it counts downloads, so a forwarded link stops working on its
-              own.
+              Sign in with the email you paid with and your licence is waiting, with the
+              download and the machines it is signed for. If you lost the email, ask and a
+              human will resend it.
             </p>
           </div>
-          <a class="btn btn-primary" href="mailto:hello@binpeek.dev?subject=download link">Send me my link</a>
+          <div class="download-actions">
+            <button class="btn btn-primary" data-account type="button">Sign in to get your licence</button>
+            <a
+              class="btn btn-ghost"
+              href="mailto:support.binpeek@gmail.com?subject=my licence"
+              >Email support instead</a
+            >
+          </div>
         </div>
       </section>
+
 
       <section class="section faq">
         <h2>Straight answers</h2>
@@ -213,6 +278,86 @@
 
     <footer class="foot">
       <p>binpeek. The analysis engine is MIT licensed. The app is proprietary.</p>
+      <p>
+        Questions, refunds, invoices:
+        <a href="mailto:support.binpeek@gmail.com">support.binpeek@gmail.com</a>
+      </p>
     </footer>
+
+    <!-- The only dialog on the page. It is here instead of on its own route so a
+         buyer never loses the price they just decided on. -->
+    <dialog class="sheet" data-sheet>
+      <div class="sheet-inner">
+        <button class="sheet-close" type="button" data-close aria-label="Close">&times;</button>
+
+        <div data-view="buy">
+          <h3>Create your account</h3>
+          <p class="sheet-lede">
+            The licence is tied to the account you make here, so this is the only
+            step before payment. It takes about fifteen seconds.
+          </p>
+          <form class="sheet-form" data-signup novalidate>
+            <label class="field">
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" required />
+            </label>
+            <label class="field">
+              <span>Password</span>
+              <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+            </label>
+            <p class="sheet-note" data-note></p>
+            <button class="btn btn-primary" type="submit">Create the account</button>
+          </form>
+          <p class="sheet-alt">
+            Already have one?
+            <button class="linkish" type="button" data-switch="signin">Sign in</button>
+          </p>
+        </div>
+
+        <div data-view="signin" hidden>
+          <h3>Sign in</h3>
+          <p class="sheet-lede">Your licence, your download and your machines live in this account.</p>
+          <form class="sheet-form" data-signin-form novalidate>
+            <label class="field">
+              <span>Email</span>
+              <input type="email" name="email" autocomplete="email" required />
+            </label>
+            <label class="field">
+              <span>Password</span>
+              <input type="password" name="password" autocomplete="current-password" required />
+            </label>
+            <p class="sheet-note" data-note></p>
+            <button class="btn btn-primary" type="submit">Sign in</button>
+          </form>
+          <p class="sheet-alt">
+            No account yet?
+            <button class="linkish" type="button" data-switch="signup">Create one</button>
+          </p>
+        </div>
+
+        <div data-view="account" hidden>
+          <h3>Your account</h3>
+          <p class="sheet-lede" data-account-email></p>
+          <div class="licence-box" data-licences></div>
+          <div class="sheet-actions">
+            <button class="btn btn-primary" data-buy type="button">Buy a licence</button>
+            <button class="btn btn-ghost" data-signout type="button">Sign out</button>
+          </div>
+        </div>
+
+        <div data-view="pay" hidden>
+          <h3>One last step</h3>
+          <p class="sheet-lede" data-pay-lede></p>
+          <p class="sheet-note" data-note></p>
+          <div class="sheet-actions">
+            <button class="btn btn-primary" data-checkout type="button">Go to secure payment</button>
+            <button class="btn btn-ghost" data-switch="account" type="button">Back</button>
+          </div>
+          <p class="sheet-fine">
+            Payment is handled by Stripe. This page never sees your card.
+          </p>
+        </div>
+      </div>
+    </dialog>
   </body>
 </html>
