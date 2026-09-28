@@ -26,13 +26,12 @@ const OFFER_ENDS = '2026-10-14T23:59:59Z';
 
 
 interface Plan {
-  id: 'trial' | 'monthly' | 'annual' | 'lifetime';
+  id: 'monthly' | 'annual' | 'lifetime';
   was: number;
   now: number;
 }
 
 const PLANS: Record<Plan['id'], Plan> = {
-  trial: { id: 'trial', was: 0, now: 0 },
   monthly: { id: 'monthly', was: 5.99, now: 4.19 },
   annual: { id: 'annual', was: 27, now: 18.9 },
   lifetime: { id: 'lifetime', was: 29.99, now: 20.99 },
@@ -93,7 +92,7 @@ function prices(): void {
     const plan = node.dataset.buy as Plan['id'] | undefined;
     if (plan === undefined) continue;
     const spec = PLANS[plan];
-    node.textContent = plan === 'trial' ? 'Start the 7 day trial' : `Buy for $${(OFFER_ACTIVE ? spec.now : spec.was).toFixed(2)}`;
+    node.textContent = `Buy for $${(OFFER_ACTIVE ? spec.now : spec.was).toFixed(2)}`;
   }
 }
 
@@ -195,28 +194,57 @@ function restoreSession(): Session | null {
 
 let pendingPlan: Plan['id'] = 'lifetime';
 
+function paymentLink(plan: Plan['id']): string | null {
+  const links: Record<Plan['id'], string | undefined> = {
+    monthly: import.meta.env.VITE_STRIPE_LINK_MONTHLY as string | undefined,
+    annual: import.meta.env.VITE_STRIPE_LINK_ANNUAL as string | undefined,
+    lifetime: import.meta.env.VITE_STRIPE_LINK_LIFETIME as string | undefined,
+  };
+  const url = links[plan];
+  if (typeof url !== 'string' || url.length === 0) return null;
+  if (!/^https:\/\/(buy\.stripe\.com|checkout\.stripe\.com|payment\.stripe\.com)\//.test(url)) {
+    throw new Error(`the ${plan} payment link is not a stripe.com url, refusing to send anyone there`);
+  }
+  return url;
+}
+
+export function hasPaymentLink(plan: Plan['id'] = 'lifetime'): boolean {
+  try {
+    return paymentLink(plan) !== null;
+  } catch {
+    return false;
+  }
+}
+
 async function checkout(): Promise<void> {
-  if (config === null) {
-    throw new Error('this page is not wired to a Supabase project yet, so it cannot take payment');
-  }
   if (session === null) throw new Error('sign in first');
-  
-  
-  const response = await fetch(`${config.url}/functions/v1/create-checkout`, {
-    method: 'POST',
-    headers: {
-      apikey: config.anonKey,
-      authorization: `Bearer ${session.accessToken}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ plan: pendingPlan, discount: OFFER_ACTIVE ? DISCOUNT : 1 }),
-  });
-  const body = await response.json();
-  if (!response.ok) throw new Error(String(body?.error ?? 'the payment service refused'));
-  if (typeof body?.url !== 'string' || body.url.length === 0) {
-    throw new Error('the payment service did not return a link');
+
+  if (config !== null) {
+    const response = await fetch(`${config.url}/functions/v1/create-checkout`, {
+      method: 'POST',
+      headers: {
+        apikey: config.anonKey,
+        authorization: `Bearer ${session.accessToken}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ plan: pendingPlan, discount: OFFER_ACTIVE ? DISCOUNT : 1 }),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(String(body?.error ?? 'the payment service refused'));
+    if (typeof body?.url !== 'string' || body.url.length === 0) {
+      throw new Error('the payment service did not return a link');
+    }
+    window.location.assign(body.url);
+    return;
   }
-  window.location.assign(body.url);
+
+  const link = paymentLink(pendingPlan);
+  if (link === null) {
+    throw new Error(
+      'no payment route is set for this plan yet. It needs a stripe payment link in the site env, or the supabase checkout function deployed.',
+    );
+  }
+  window.location.assign(link);
 }
 
 
@@ -288,7 +316,27 @@ function wire(): void {
   for (const node of document.querySelectorAll<HTMLElement>('[data-buy]')) {
     node.addEventListener('click', () => {
       const plan = node.dataset.buy as Plan['id'] | undefined;
-      if (plan !== undefined) pendingPlan = plan;
+      if (plan === undefined) return;
+      pendingPlan = plan;
+      const spec = PLANS[plan];
+      const price = (OFFER_ACTIVE ? spec.now : spec.was).toFixed(2);
+
+      // With a payment link and no account service, Stripe collects the email on
+      // its own page, so asking for an account first would be a wall in front of
+      // a working checkout. The account gate only stays when there is a project
+      // to sign in to.
+      let link: string | null = null;
+      try {
+        link = config === null ? paymentLink(plan) : null;
+      } catch (error) {
+        note((error as Error).message, 'error');
+        return;
+      }
+      if (link !== null) {
+        window.location.assign(link);
+        return;
+      }
+
       if (session === null) {
         show('signup');
         note('Create the account, then you pay. The licence lands in it.');
@@ -296,13 +344,7 @@ function wire(): void {
       }
       show('pay');
       const lede = sheet.querySelector<HTMLElement>('[data-pay-lede]');
-      if (lede !== null) {
-        const spec = PLANS[pendingPlan];
-        lede.textContent =
-          pendingPlan === 'trial'
-            ? 'A week, no card, every engine. It expires on its own.'
-            : `You are about to pay $${(OFFER_ACTIVE ? spec.now : spec.was).toFixed(2)} for the ${spec.id} plan.`;
-      }
+      if (lede !== null) lede.textContent = `You are about to pay $${price} for the ${spec.id} plan.`;
     });
   }
 
@@ -324,7 +366,6 @@ function wire(): void {
     note('opening Stripe');
     void checkout().catch((error: Error) => note(error.message, 'error'));
   });
-
   const signup = sheet.querySelector<HTMLFormElement>('[data-signup]');
   signup?.addEventListener('submit', (event) => {
     event.preventDefault();
