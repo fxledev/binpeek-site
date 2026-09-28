@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>binpeek &mdash; read a jar before you trust it</title>
+    <meta
+      name="description"
+      content="A Windows tool that decompiles, obfuscates and deobfuscates jar files on your machine. Buy once, download from your account, no subscription required."
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta property="og:title" content="binpeek" />
+    <meta property="og:description" content="Read a jar before you trust it." />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./site.css" />
+    <script type="module" src="./site.ts"></script>
+  </head>
+  <body>
+    <div class="backdrop" aria-hidden="true"></div>
+    <header class="nav">
+      <a class="nav-brand" href="#top">
+        <span class="nav-mark" aria-hidden="true"></span>
+        <span>binpeek</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#tools">Tools</a>
+        <a href="#how">How it works</a>
+        <a href="#pricing">Pricing</a>
+        <a class="nav-cta" href="#pricing">Get the app</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <p class="hero-eyebrow">Windows tool for jar files</p>
+        <h1>Read a jar<br />before you trust it.</h1>
+        <p class="hero-lede">
+          Drop a jar into binpeek and get Java source you can actually read, plus a report
+          of what the archive is hiding: encrypted strings, flattened control flow, stripped
+          names, native calls. Everything runs on your machine. Nothing is uploaded.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#pricing">Buy and download</a>
+          <a class="btn btn-ghost" href="#how">See what it reports</a>
+        </div>
+        <p class="hero-note">One file. No installer, no account to try it, no telemetry.</p>
+      </section>
+
+      <section class="strip" aria-label="at a glance">
+        <div class="strip-item"><strong data-count="0">0</strong><span>bytes uploaded, ever</span></div>
+        <div class="strip-item"><strong data-count="3">3</strong><span>tools in one app</span></div>
+        <div class="strip-item"><strong data-count="1">1</strong><span>file, 63 MB, no dependencies</span></div>
+        <div class="strip-item"><strong>MIT</strong><span>the analysis engine is open</span></div>
+      </section>
+
+      <div class="marquee" aria-label="what it has been pointed at">
+        <div class="marquee-track" data-marquee>
+          <span>Fabric</span><span>Forge</span><span>Quilt</span><span>Bukkit</span><span>Velocity</span
+          ><span>java 8 to 21</span><span>1.8 to 1.21</span><span>zip64</span><span>multi release</span
+          ><span>shaded jars</span><span>nested jars</span>
+        </div>
+      </div>
+
+      <section id="tools" class="section">
+        <h2>Three tools, one engine</h2>
+        <div class="bento">
+          <article class="card card-wide" data-spotlight>
+            <p class="card-kicker">Decompiler</p>
+            <h3>Bytecode back to Java</h3>
+            <p>
+              Reads the constant pool, the fields, the methods and the code, and emits Java.
+              Methods that do not branch come out directly. Methods that do are lowered to a
+              state machine, and the app tells you the split instead of pretending.
+            </p>
+          </article>
+          <article class="card" data-spotlight>
+            <p class="card-kicker">Obfuscator</p>
+            <h3>Protect a jar you own</h3>
+            <p>
+              Rename members, encrypt the string table, flatten control flow and strip debug
+              info, one pass at a time so you can see what each one costs you at startup.
+            </p>
+          </article>
+          <article class="card" data-spotlight>
+            <p class="card-kicker">Deobfuscator</p>
+            <h3>Undo that protection</h3>
+            <p>
+              Apply mappings, recover the string table by running the decryptor in isolation,
+              unfold the dispatcher and fold dynamic constants back into literals.
+            </p>
+          </article>
+          <article class="card card-wide card-quiet" data-spotlight>
+            <p class="card-kicker">The report</p>
+            <h3>What the archive is hiding</h3>
+            <p>
+              A 0 to 100 score built from weighted signals, and findings that name the class
+              and method they came from: a decryptor that reads the call stack, a wide switch
+              dispatcher, a native load, a cipher, high entropy constants.
+            </p>
+            <p class="card-meta">
+              The score is calibrated against real jars and the calibration is a test, so it
+              cannot quietly stop meaning anything.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="how" class="section section-split">
+        <div>
+          <h2>It parses. It never runs.</h2>
+          <p class="body">
+            A jar is a hostile file. You do not know what is inside it, and the whole point
+            is that it may be trying to do something to the machine you run it on.
+          </p>
+          <p class="body">
+            binpeek treats it that way. Every read is bounds checked, a lying or truncated
+            file is refused rather than guessed at, all work happens in a worker with hard
+            limits on entries, inflated bytes, compression ratio, classes, strings and time,
+            and the report prints the caps that were in force.
+          </p>
+        </div>
+        <ul class="checks">
+          <li>No server, so there is nothing to breach</li>
+          <li>No account, so there is nothing to leak</li>
+          <li>No third party code at runtime, so there is nothing to trust</li>
+          <li>No code execution, so a jar cannot act on your machine</li>
+        </ul>
+      </section>
+
+      <section id="pricing" class="section">
+        <h2>Pay once if you can, subscribe if you want the updates</h2>
+        <div class="plans">
+          <article class="plan" data-spotlight>
+            <h3>Monthly</h3>
+            <p class="plan-price"><span>$5.99</span> per month</p>
+            <p class="plan-note">Cancel whenever. Includes support.</p>
+            <ul>
+              <li>The app, all three tools</li>
+              <li>Every update while you are subscribed</li>
+              <li>Email support</li>
+            </ul>
+          </article>
+          <article class="plan" data-spotlight>
+            <h3>Annual</h3>
+            <p class="plan-price"><span>$27</span> per year</p>
+            <p class="plan-note">Ten percent under the lifetime price.</p>
+            <ul>
+              <li>The app, all three tools</li>
+              <li>Twelve months of updates</li>
+              <li>Email support</li>
+            </ul>
+          </article>
+          <article class="plan plan-featured" data-spotlight>
+            <p class="plan-flag">best value</p>
+            <h3>Lifetime</h3>
+            <p class="plan-price"><span>$29.99</span> once</p>
+            <p class="plan-note">Pay once. It keeps working.</p>
+            <ul>
+              <li>The app, all three tools</li>
+              <li>Every update, forever</li>
+              <li>Priority support</li>
+            </ul>
+          </article>
+        </div>
+        <div class="download">
+          <div>
+            <h3>Already bought it?</h3>
+            <p class="body">
+              The download link is emailed to you after the payment clears. It is signed,
+              it expires, and it counts downloads, so a forwarded link stops working on its
+              own.
+            </p>
+          </div>
+          <a class="btn btn-primary" href="mailto:hello@binpeek.dev?subject=download link">Send me my link</a>
+        </div>
+      </section>
+
+      <section class="section faq">
+        <h2>Straight answers</h2>
+        <details>
+          <summary>Do I need Java installed?</summary>
+          <p>
+            No. The app is a single self contained file. It needs Windows and the WebView2
+            runtime, which is already part of Windows 11 and of any current Windows 10.
+          </p>
+        </details>
+        <details>
+          <summary>Is it legal to use on a jar that is not mine?</summary>
+          <p>
+            The tools are for code you own or are allowed to modify. Deobfuscating something
+            you did not write, or that you are not authorised to change, is on you.
+          </p>
+        </details>
+        <details>
+          <summary>How is the download gated?</summary>
+          <p>
+            A payment through Stripe mints a signed, expiring token with a download count
+            attached, and that token is what unlocks the file. There is no account database
+            to compromise, which is also why there is no password to leak.
+          </p>
+        </details>
+        <details>
+          <summary>How good is the decompiler really?</summary>
+          <p>
+            On a real Fabric mod it fully understands about 85 percent of methods and emits
+            about 65 percent as straight line Java. On heavily obfuscated jars it drops to
+            roughly 75 percent understood. The app shows you the numbers for your file
+            rather than a claim.
+          </p>
+        </details>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <p>binpeek. The analysis engine is MIT licensed. The app is proprietary.</p>
+    </footer>
+  </body>
+</html>
