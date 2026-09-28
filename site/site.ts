@@ -217,9 +217,20 @@ export function hasPaymentLink(plan: Plan['id'] = 'lifetime'): boolean {
 }
 
 async function checkout(): Promise<void> {
-  if (session === null) throw new Error('sign in first');
+  const plan = pendingPlan;
+  const link = paymentLink(plan);
 
-  if (config !== null) {
+  // A payment link is the route that always exists, so it is the floor, not the
+  // exception. A buyer who reaches a dead checkout button has already decided
+  // to pay, and a backend that is still waiting on a key is not a reason to
+  // lose the sale.
+  if (config === null || session === null) {
+    if (link === null) throw new Error('no payment route is set for this plan yet');
+    window.location.assign(link);
+    return;
+  }
+
+  try {
     const response = await fetch(`${config.url}/functions/v1/create-checkout`, {
       method: 'POST',
       headers: {
@@ -227,7 +238,7 @@ async function checkout(): Promise<void> {
         authorization: `Bearer ${session.accessToken}`,
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ plan: pendingPlan, discount: OFFER_ACTIVE ? DISCOUNT : 1 }),
+      body: JSON.stringify({ plan, discount: OFFER_ACTIVE ? DISCOUNT : 1 }),
     });
     const body = await response.json();
     if (!response.ok) throw new Error(String(body?.error ?? 'the payment service refused'));
@@ -236,15 +247,11 @@ async function checkout(): Promise<void> {
     }
     window.location.assign(body.url);
     return;
+  } catch (error) {
+    if (link === null) throw error;
+    console.warn(`checkout fell back to the payment link: ${String(error)}`);
+    window.location.assign(link);
   }
-
-  const link = paymentLink(pendingPlan);
-  if (link === null) {
-    throw new Error(
-      'no payment route is set for this plan yet. It needs a stripe payment link in the site env, or the supabase checkout function deployed.',
-    );
-  }
-  window.location.assign(link);
 }
 
 
