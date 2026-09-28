@@ -12,6 +12,10 @@
 
 
 
+import { auroraText, gradientText, lineShadowText, numberTicker, shinyText, sparklesText, textAnimate } from './text';
+import { borderBeam, magicCard, meteors, particles, ripple, shineBorder } from './effects';
+import { animatedList, bentoGrid, dock, marquee, progressiveBlur, terminal } from './components';
+
 export interface AuthConfig {
   url: string;
   anonKey: string;
@@ -352,93 +356,130 @@ function wire(): void {
   });
 }
 
+/* ------------------------------------------------------- magic ui effects */
 
-
-
-
-
-
-const spotlights = [...document.querySelectorAll<HTMLElement>('[data-spotlight]')];
-const pointer = { x: 0, y: 0 };
-let queued = false;
-
-function paint(): void {
-  queued = false;
-  for (const card of spotlights) {
-    const box = card.getBoundingClientRect();
-    if (box.width === 0) continue;
-    card.style.setProperty('--x', `${pointer.x - box.left}px`);
-    card.style.setProperty('--y', `${pointer.y - box.top}px`);
+function applyTextEffects(): void {
+  for (const node of document.querySelectorAll<HTMLElement>('[data-text-effect]')) {
+    const effect = node.dataset.textEffect;
+    if (effect === 'shiny') shinyText(node, { shimmerWidth: 120 });
+    else if (effect === 'sparkles') sparklesText(node, { count: 9 });
+    else if (effect === 'line-shadow') lineShadowText(node, { shadowColor: '#8f8f8f' });
+    else if (effect === 'aurora') auroraText(node, { speed: 0.6 });
+    else if (effect === 'animate') textAnimate(node, { animation: 'fadeIn', by: 'word' });
+    else if (effect === 'gradient') gradientText(node, { speed: 1.4 });
   }
 }
 
-window.addEventListener(
-  'pointermove',
-  (event: PointerEvent) => {
-    pointer.x = event.clientX;
-    pointer.y = event.clientY;
-    if (queued) return;
-    queued = true;
-    requestAnimationFrame(paint);
-  },
-  { passive: true },
-);
+function applyTicker(): void {
+  const nodes = [...document.querySelectorAll<HTMLElement>('[data-ticker]')];
+  if (nodes.length === 0) return;
 
-for (const card of spotlights) {
-  card.addEventListener('touchstart', () => {
-    const box = card.getBoundingClientRect();
-    card.style.setProperty('--x', `${box.width / 2}px`);
-    card.style.setProperty('--y', `${box.height / 2}px`);
-  });
-}
+  const show = (node: HTMLElement): void => {
+    const value = Number(node.dataset.ticker ?? '0');
+    numberTicker(node, { value, delay: 0.1 });
+  };
 
-
-
-const tickers = [...document.querySelectorAll<HTMLElement>('[data-count]')];
-
-function runTicker(node: HTMLElement): void {
-  const raw = node.dataset.count ?? '0';
-  const target = Number.parseFloat(raw.replace(/[^0-9.]/g, ''));
-  const suffix = raw.replace(/^[\$0-9.]/, '');
-  if (!Number.isFinite(target) || target === 0) {
-    node.textContent = raw;
+  if (!('IntersectionObserver' in window)) {
+    for (const node of nodes) show(node);
     return;
   }
-  const start = performance.now();
-  const step = (now: number): void => {
-    const t = Math.min(1, (now - start) / 900);
-    const eased = t === 1 ? 1 : 1 - 2 ** (-10 * t);
-    node.textContent = `${(target * eased).toFixed(0)}${suffix}`;
-    if (t < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
-
-for (const node of tickers) node.textContent = node.dataset.count ?? '0';
-
-if (tickers.length > 0 && 'IntersectionObserver' in window) {
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         observer.unobserve(entry.target);
-        runTicker(entry.target as HTMLElement);
+        show(entry.target as HTMLElement);
       }
     },
     { threshold: 0.6 },
   );
-  for (const node of tickers) observer.observe(node);
-} else {
-  for (const node of tickers) runTicker(node);
+  for (const node of nodes) observer.observe(node);
 }
 
+function applyTerminal(): void {
+  const host = document.querySelector<HTMLElement>('[data-terminal]');
+  if (host === null) return;
+  terminal(host, {
+    command: 'binpeek',
+    duration: 34,
+    delay: 320,
+    lines: [
+      { text: 'binpeek inspect Clumps-2.1.0.jar', tone: 'bright', typing: true },
+      { text: 'read 175 classes, 1054 methods', tone: 'dim' },
+      { text: 'constant pool ok, no bad magic', tone: 'dim' },
+      { text: 'net/fabricmc/fabric/IMinecraft: native calls, 2', tone: 'dim' },
+      { text: 'high entropy constants: 41 classes', tone: 'dim' },
+      { text: 'dispatcher detected in 6 methods', tone: 'dim' },
+      { text: 'score 38 / 100, band: light', tone: 'bright' },
+      { text: '0 bytes left this machine', tone: 'dim' },
+    ],
+  });
+}
 
+function applyList(): void {
+  const host = document.querySelector<HTMLElement>('[data-list]');
+  if (host === null) return;
+  animatedList(host, {
+    delay: 2000,
+    items: [
+      { title: 'String table is encrypted', detail: 'owner decrypts at class init' },
+      { title: 'Control flow is flattened', detail: 'switch dispatcher over a state var' },
+      { title: 'Debug info stripped', detail: 'no line numbers, no local var names' },
+      { title: 'A native load in the archive', detail: 'LDC of a library that is not JDK' },
+    ],
+  });
+}
 
-for (const track of document.querySelectorAll<HTMLElement>('[data-marquee]')) {
-  const clone = track.cloneNode(true);
-  if (clone instanceof HTMLElement) {
-    clone.setAttribute('aria-hidden', 'true');
-    track.parentElement?.append(clone);
+function applyDock(): void {
+  const host = document.querySelector<HTMLElement>('[data-dock]');
+  if (host === null) return;
+  dock(host, { size: 40, magnification: 60, distance: 140 });
+}
+
+function applyBackdropFx(): void {
+  const fx = (name: string): HTMLElement | null =>
+    document.querySelector<HTMLElement>(`[data-fx="${name}"]`);
+
+  const field = fx('particles');
+  if (field !== null) particles(field, { quantity: 70, ease: 90, color: '#ffffff' });
+
+  const sky = fx('meteors');
+  if (sky !== null) meteors(sky, { number: 14, angle: 215 });
+
+  const hero = fx('hero');
+  if (hero !== null) ripple(hero, { numCircles: 7 });
+
+  const wash = fx('aurora-wash');
+  if (wash !== null) particles(wash, { quantity: 0 });
+}
+
+function applyCards(): void {
+  for (const node of document.querySelectorAll<HTMLElement>('[data-magic]')) {
+    magicCard(node, { gradientSize: 220, gradientOpacity: 0.75 });
+  }
+  for (const node of document.querySelectorAll<HTMLElement>('[data-beam]')) {
+    borderBeam(node, { size: 120, duration: 7, colorFrom: '#ffffff', colorTo: '#2f2f2f' });
+  }
+  for (const node of document.querySelectorAll<HTMLElement>('[data-bento]')) {
+    bentoGrid(node);
+  }
+  const blurHost = document.querySelector<HTMLElement>('[data-blur-host]');
+  if (blurHost !== null) {
+    blurHost.classList.add('mu-pblur-host');
+    const blur = document.createElement('div');
+    blur.setAttribute('aria-hidden', 'true');
+    blurHost.append(blur);
+    progressiveBlur(blur, { position: 'bottom', height: '26%' });
+  }
+  const offer = document.querySelector<HTMLElement>('.offer');
+  if (offer !== null) shineBorder(offer, { duration: 16 });
+  const heroButton = document.querySelector<HTMLElement>('[data-fx-button]');
+  if (heroButton !== null) shineBorder(heroButton, { duration: 9 });
+}
+
+function applyMarquee(): void {
+  for (const node of document.querySelectorAll<HTMLElement>('[data-marquee-host]')) {
+    marquee(node, { repeat: 4, duration: 38, pauseOnHover: true });
   }
 }
 
@@ -447,3 +488,11 @@ restoreSession();
 countdown();
 prices();
 wire();
+applyTextEffects();
+applyTicker();
+applyBackdropFx();
+applyCards();
+applyMarquee();
+applyTerminal();
+applyList();
+applyDock();

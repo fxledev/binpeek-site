@@ -1,0 +1,650 @@
+/* Magic UI components, ported to vanilla CSS.
+ *
+ * Every value here comes from the reference component. The only thing that changed
+ * is the colour: the reference palettes are magenta, purple and orange, and this
+ * page is white on black, so each effect keeps its mechanism and loses its hue.
+ *
+ * Where a component needed more than a palette swap, that is written next to it
+ * instead of being hidden. */
+
+@property --shine-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.mu-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------- text */
+
+/* The reference clips the glare to the text AND keeps a grey text colour, so at
+   rest the words are still readable and only the highlight travels. Setting the
+   colour to transparent, which is the obvious way to do it, makes the button
+   empty until the sweep arrives. */
+.mu-shiny {
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, transparent 100%);
+  background-size: var(--shiny-width, 100px) 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: rgba(255, 255, 255, 0.72);
+  animation: mu-shiny 8s cubic-bezier(0.6, 0.6, 0, 1) infinite;
+}
+
+@keyframes mu-shiny {
+  0%,
+  90%,
+  100% {
+    background-position: calc(-100% - var(--shiny-width, 100px)) 0;
+  }
+  30%,
+  60% {
+    background-position: calc(100% + var(--shiny-width, 100px)) 0;
+  }
+}
+
+.mu-gradient-text {
+  background-image: linear-gradient(90deg, var(--color-from, #fff), var(--color-to, #8a8a8a), var(--color-from, #fff));
+  background-size: var(--bg-size, 300%) 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: mu-gradient 8s linear infinite;
+}
+
+@keyframes mu-gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;
+  }
+}
+
+/* The reference rotates and scales the words while the gradient moves. That
+   wobble is a neon effect; monochrome keeps the movement and drops the rest. */
+.mu-aurora {
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: mu-aurora 10s ease-in-out infinite alternate;
+}
+
+@keyframes mu-aurora {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 100%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 0%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.mu-line-shadow {
+  position: relative;
+  z-index: 0;
+  display: inline-block;
+  font-style: italic;
+}
+
+/* 0.06em tiles at full white is a solid hatched box rather than a shadow. The
+   reference pairs a 1:1 white with a 10px tile, which reads as texture; on a
+   display face that size has to be smaller and the colour much dimmer. */
+.mu-line-shadow::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0.035em;
+  left: 0.035em;
+  z-index: -10;
+  background-image: linear-gradient(
+    45deg,
+    transparent 47%,
+    var(--shadow-color, #fff) 47%,
+    var(--shadow-color, #fff) 53%,
+    transparent 0
+  );
+  background-size: 0.028em 0.028em;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: 0.5;
+  animation: mu-line-shadow 15s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes mu-line-shadow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% -100%;
+  }
+}
+
+.mu-dia {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: text-bottom;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-size: 100% 100%;
+  transform: translateY(-2px);
+}
+
+.mu-sparkles {
+  position: relative;
+  display: inline-block;
+}
+
+.mu-sparkles-holder {
+  position: relative;
+  display: inline-block;
+}
+
+.mu-sparkle {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  animation: mu-sparkle 0.8s ease-in-out infinite;
+}
+
+@keyframes mu-sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(75deg);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0) rotate(150deg);
+  }
+}
+
+.mu-ticker {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+.mu-seg {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+  animation: mu-seg 0.3s ease-out forwards;
+}
+
+.mu-seg-line {
+  display: block;
+}
+
+@keyframes mu-seg {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------- effects */
+
+.mu-ripple {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, #fff, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #fff, transparent);
+}
+
+.mu-ripple-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%) scale(1);
+  animation: mu-ripple 2s ease infinite;
+  animation-delay: calc(var(--ripple-i, 0) * 0.2s);
+}
+
+@keyframes mu-ripple {
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+}
+
+.mu-beam {
+  position: absolute;
+  inset: 0;
+  border: var(--border-beam-width, 1px) solid transparent;
+  border-radius: inherit;
+  pointer-events: none;
+  mask-image: linear-gradient(transparent, transparent), linear-gradient(#000, #000);
+  -webkit-mask-image: linear-gradient(transparent, transparent), linear-gradient(#000, #000);
+  mask-clip: padding-box, border-box;
+  -webkit-mask-clip: padding-box, border-box;
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+
+.mu-beam-dot {
+  position: absolute;
+  aspect-ratio: 1;
+  background-image: linear-gradient(
+    to left,
+    var(--color-from, #fff),
+    var(--color-to, #4a4a4a),
+    transparent
+  );
+  offset-distance: var(--beam-from, 0%);
+  animation: mu-beam var(--beam-duration, 6s) linear infinite;
+  animation-direction: normal;
+}
+
+@keyframes mu-beam {
+  from {
+    offset-distance: var(--beam-from, 0%);
+  }
+  to {
+    offset-distance: var(--beam-to, 100%);
+  }
+}
+
+.mu-magic-card {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.mu-magic-fill,
+.mu-magic-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.mu-magic-fill {
+  z-index: 1;
+}
+
+.mu-magic-glow {
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.mu-magic-card.is-lit .mu-magic-glow {
+  opacity: 0.8;
+}
+
+.mu-magic-content {
+  position: relative;
+  z-index: 3;
+}
+
+.mu-shine-border {
+  position: relative;
+  border: var(--shine-border-width, 1px) solid transparent;
+  background-clip: padding-box, border-box;
+  background-origin: border-box;
+  background-image: linear-gradient(rgba(8, 8, 8, 0.96), rgba(8, 8, 8, 0.96)), var(--shine-colors);
+  animation: mu-shine-turn var(--shine-duration, 14s) linear infinite;
+}
+
+@keyframes mu-shine-turn {
+  to {
+    --shine-angle: 360deg;
+  }
+}
+
+.mu-meteors {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mu-meteor {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 9999px;
+  background: #71717a;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  rotate: var(--angle, -215deg);
+  animation: mu-meteor 5s linear infinite;
+}
+
+.mu-meteor-tail {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: -10;
+  width: 50px;
+  height: 1px;
+  transform: translateY(-50%);
+  background-image: linear-gradient(90deg, #71717a, transparent);
+}
+
+@keyframes mu-meteor {
+  0% {
+    transform: rotate(var(--angle, -215deg)) translateX(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--angle, -215deg)) translateX(-500px);
+    opacity: 0;
+  }
+}
+
+.mu-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mu-particles canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.backdrop-wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(50rem 34rem at 18% 8%, rgba(255, 255, 255, 0.05), transparent 60%),
+    radial-gradient(46rem 30rem at 82% 74%, rgba(255, 255, 255, 0.04), transparent 62%);
+  animation: mu-wash 24s ease-in-out infinite alternate;
+}
+
+@keyframes mu-wash {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-2%, 2%, 0) scale(1.08);
+  }
+}
+
+/* ------------------------------------------------------------ components */
+
+.mu-term {
+  position: relative;
+  overflow: hidden;
+  background: rgba(6, 6, 7, 0.9);
+  border: 1px solid var(--edge-soft);
+  border-radius: 16px;
+  box-shadow: var(--inner-top), 0 30px 70px -40px rgba(0, 0, 0, 0.9);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.7;
+}
+
+.mu-term-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--edge-soft);
+}
+
+.mu-term-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #2a2a2a;
+}
+
+.mu-term-dot[data-tone='red'] {
+  background: #4a3030;
+}
+
+.mu-term-dot[data-tone='amber'] {
+  background: #3d3a2c;
+}
+
+.mu-term-dot[data-tone='green'] {
+  background: #2c3d31;
+}
+
+.mu-term-title {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: 0.68rem;
+}
+
+.mu-term-body {
+  padding: 0.9rem 1rem 1.1rem;
+  min-height: 15.5rem;
+}
+
+.mu-term-line {
+  color: var(--dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.mu-term-line.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mu-term-prompt {
+  color: var(--text);
+  margin-bottom: 0.3rem;
+}
+
+.mu-term-line.is-dim {
+  color: #9a9a9a;
+}
+
+.mu-term-caret {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.9em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--text);
+  animation: mu-blink 1s steps(1) infinite;
+}
+
+@keyframes mu-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.mu-list-host {
+  position: relative;
+  margin-top: 1rem;
+  padding-bottom: 2.5rem;
+}
+
+.mu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mu-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--edge-soft);
+  border-radius: 13px;
+  box-shadow: var(--inner-top);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1), transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mu-list-item.is-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mu-list-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 9999px;
+  background: var(--text);
+  opacity: 0.5;
+}
+
+.mu-list-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mu-list-text strong {
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+.mu-list-text span {
+  font-size: 0.76rem;
+  color: var(--faint);
+}
+
+.mu-dock {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: max-content;
+  height: 58px;
+  padding: 0.5rem;
+  background: rgba(20, 20, 21, 0.6);
+  border: 1px solid var(--edge-soft);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--inner-top);
+}
+
+.mu-dock-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  color: var(--dim);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--edge-soft);
+  border-radius: 9999px;
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+
+.mu-dock-icon:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--edge);
+}
+
+.mu-dock-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mu-dock-sep {
+  width: 1px;
+  height: 100%;
+  margin: 0 0.2rem;
+  background: var(--edge-soft);
+}
+
+/* The host has to establish a containing block. Without it the absolutely
+   positioned blur resolves against the viewport and lands on an unrelated
+   section, which is exactly what it did the first time. */
+.mu-pblur-host {
+  position: relative;
+}
+
+.mu-pblur {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.mu-pblur[data-position='bottom'] {
+  bottom: 0;
+}
+
+.mu-pblur[data-position='top'] {
+  top: 0;
+}
+
+.mu-pblur[data-position='both'] {
+  inset: 0;
+}
+
+.mu-pblur-layer {
+  position: absolute;
+  inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mu-shiny,
+  .mu-gradient-text,
+  .mu-aurora,
+  .mu-line-shadow::after,
+  .mu-shine-border,
+  .mu-ripple-circle,
+  .mu-meteor,
+  .mu-sparkle,
+  .mu-term-caret,
+  .backdrop-wash {
+    animation: none !important;
+  }
+
+  .mu-term-line,
+  .mu-list-item,
+  .mu-seg {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
