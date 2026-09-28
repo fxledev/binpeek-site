@@ -1,5 +1,5 @@
-/* binpeek site. Static HTML, so the interest has to come from the layer: colour
-   that moves, light that follows the pointer, and a border that walks. */
+
+
 
 @property --shine-angle {
   syntax: '<angle>';
@@ -67,11 +67,11 @@ a {
   border-radius: 8px;
 }
 
-/* ---------------------------------------------------------------- backdrop */
 
-/* Three stacked layers, no images: a grid that slides, an aurora of colour, and
-   grain. The grid is on its own layer so it can translate without repainting the
-   gradients above it. */
+
+
+
+
 .backdrop {
   position: fixed;
   inset: 0;
@@ -109,7 +109,7 @@ a {
   }
 }
 
-/* --------------------------------------------------------------------- nav */
+
 
 .nav {
   position: sticky;
@@ -163,7 +163,7 @@ a {
   box-shadow: var(--inner-top);
 }
 
-/* -------------------------------------------------------------------- hero */
+
 
 .hero {
   position: relative;
@@ -222,11 +222,11 @@ a {
   color: var(--faint);
 }
 
-/* ------------------------------------------------------------------ button */
 
-/* The shine border: a conic gradient that turns, clipped to the 1px edge of the
-   button. The mask is the two layer form on purpose, the `exclude` keyword in the
-   `mask` shorthand is not honoured everywhere. */
+
+
+
+
 .btn {
   position: relative;
   display: inline-flex;
@@ -307,7 +307,7 @@ a {
   }
 }
 
-/* ------------------------------------------------------------------- strip */
+
 
 .strip {
   display: grid;
@@ -345,7 +345,7 @@ a {
   color: var(--faint);
 }
 
-/* ------------------------------------------------------------------ marquee */
+
 
 .marquee {
   display: flex;
@@ -379,7 +379,7 @@ a {
   }
 }
 
-/* ----------------------------------------------------------------- sections */
+
 
 .section {
   max-width: var(--shell);
@@ -401,7 +401,7 @@ a {
   color: var(--dim);
 }
 
-/* -------------------------------------------------------------------- bento */
+
 
 .bento {
   display: grid;
@@ -434,8 +434,8 @@ a {
   transform: translateY(-3px);
 }
 
-/* The spotlight is a single radial gradient at the pointer, painted over a
-   transparent card. One element, no extra markup, and it costs one paint. */
+
+
 .card::before,
 .plan::before {
   content: '';
@@ -490,12 +490,12 @@ a {
   color: var(--faint) !important;
 }
 
-/* ------------------------------------------------------------------ pricing */
 
-/* ----------------------------------------------------------------- the offer */
 
-/* A bar that is always on screen, because the deadline is the whole argument.
-   Sticky under the nav so the clock is never more than a glance away. */
+
+
+
+
 .offer {
   position: sticky;
   top: 0;
@@ -555,7 +555,7 @@ a {
   color: var(--faint);
 }
 
-/* ------------------------------------------------------------------ pricing */
+
 
 .plans {
   display: grid;
@@ -669,10 +669,10 @@ a {
   border-radius: 999px;
 }
 
-/* -------------------------------------------------------------------- proof */
 
-/* Three answers to the three questions that stop a sale: what if I hate it, how
-   do I try it, and is this going to install something. */
+
+
+
 .proof {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
@@ -749,7 +749,7 @@ a {
   color: var(--dim);
 }
 
-/* -------------------------------------------------------------------- sheet */
+
 
 .sheet {
   width: min(28rem, calc(100vw - 2rem));
@@ -908,7 +908,7 @@ a {
   color: var(--faint);
 }
 
-/* --------------------------------------------------------------- split, faq */
+
 
 .section-split {
   display: grid;

@@ -1,16 +1,16 @@
-/**
- * The shop side of the licence system.
- *
- * Three jobs, all of them small enough to do without a framework:
- *
- *  1. The launch clock. One deadline, one countdown, and it decides both what the
- *     prices say and which Stripe price id the buy button uses. The discount is
- *     not decoration: the offer disappears when the clock does.
- *  2. The account. Supabase Auth over fetch, the same three endpoints the app
- *     uses, so there is one shape of session in the whole project.
- *  3. Checkout. The page never touches a card. It asks an edge function for a
- *     Stripe Checkout session and sends the buyer to the url it hands back.
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export interface AuthConfig {
   url: string;
@@ -19,8 +19,8 @@ export interface AuthConfig {
 
 const OFFER_ENDS = '2026-10-14T23:59:59Z';
 
-/** What each plan costs, and what Stripe calls it. Filled from the edge function
- *  when it answers, because the price ids are a server side secret. */
+
+
 interface Plan {
   id: 'trial' | 'monthly' | 'annual' | 'lifetime';
   was: number;
@@ -37,7 +37,7 @@ const PLANS: Record<Plan['id'], Plan> = {
 const DISCOUNT = 0.7;
 const OFFER_ACTIVE = Date.now() < Date.parse(OFFER_ENDS);
 
-/** ---------------------------------------------------------------- countdown */
+
 
 function countdown(): void {
   const nodes = [...document.querySelectorAll<HTMLElement>('[data-countdown]')];
@@ -71,7 +71,7 @@ function countdown(): void {
   tick();
 }
 
-/** ------------------------------------------------------------------ pricing */
+
 
 function prices(): void {
   for (const node of document.querySelectorAll<HTMLElement>('[data-price]')) {
@@ -82,7 +82,7 @@ function prices(): void {
     node.textContent = `$${value.toFixed(2)}`;
   }
   for (const node of document.querySelectorAll<HTMLElement>('[data-was]')) {
-    // The crossed out price is only honest while the offer is running.
+    
     node.hidden = !OFFER_ACTIVE;
   }
   for (const node of document.querySelectorAll<HTMLElement>('.plan-buy')) {
@@ -93,7 +93,7 @@ function prices(): void {
   }
 }
 
-/** --------------------------------------------------------------------- auth */
+
 
 let config: AuthConfig | null = null;
 
@@ -147,8 +147,8 @@ async function signUp(email: string, password: string): Promise<Session> {
     body: JSON.stringify({ email, password }),
   });
   if (data.access_token === undefined) {
-    // Confirmation is on, so there is no session yet. That is a normal outcome,
-    // not a failure, and the note tells the user to go and confirm.
+    
+    
     throw new Error('check your inbox and confirm the address, then sign in');
   }
   return toSession(data);
@@ -187,7 +187,7 @@ function restoreSession(): Session | null {
   return session;
 }
 
-/* ------------------------------------------------------------------- checkout */
+
 
 let pendingPlan: Plan['id'] = 'lifetime';
 
@@ -196,8 +196,8 @@ async function checkout(): Promise<void> {
     throw new Error('this page is not wired to a Supabase project yet, so it cannot take payment');
   }
   if (session === null) throw new Error('sign in first');
-  // The edge function is what knows the price ids and the secret key. The
-  // browser only ever learns a checkout url.
+  
+  
   const response = await fetch(`${config.url}/functions/v1/create-checkout`, {
     method: 'POST',
     headers: {
@@ -215,7 +215,7 @@ async function checkout(): Promise<void> {
   window.location.assign(body.url);
 }
 
-/* ----------------------------------------------------------------------- ui */
+
 
 function show(view: string): void {
   const sheet = document.querySelector<HTMLDialogElement>('[data-sheet]');
@@ -352,12 +352,12 @@ function wire(): void {
   });
 }
 
-/**
- * The spotlight that follows the pointer. The CSS only knows how to draw it at
- * `--x` / `--y`, so the script only has to publish two numbers. It is driven
- * from a single rAF instead of one listener per card, and cards register
- * themselves through a data attribute so the markup stays declarative.
- */
+
+
+
+
+
+
 const spotlights = [...document.querySelectorAll<HTMLElement>('[data-spotlight]')];
 const pointer = { x: 0, y: 0 };
 let queued = false;
@@ -392,8 +392,8 @@ for (const card of spotlights) {
   });
 }
 
-/** Numbers that count up when they scroll into view. The final value lives in the
- *  markup, so the page is still correct with JavaScript switched off. */
+
+
 const tickers = [...document.querySelectorAll<HTMLElement>('[data-count]')];
 
 function runTicker(node: HTMLElement): void {
@@ -432,8 +432,8 @@ if (tickers.length > 0 && 'IntersectionObserver' in window) {
   for (const node of tickers) runTicker(node);
 }
 
-/** The marquee duplicates its content once, and the clone is hidden from screen
- *  readers so the row is not read twice. */
+
+
 for (const track of document.querySelectorAll<HTMLElement>('[data-marquee]')) {
   const clone = track.cloneNode(true);
   if (clone instanceof HTMLElement) {
