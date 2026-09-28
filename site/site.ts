@@ -229,7 +229,6 @@ async function checkout(): Promise<void> {
     window.location.assign(link);
     return;
   }
-
   try {
     const response = await fetch(`${config.url}/functions/v1/create-checkout`, {
       method: 'POST',
@@ -328,13 +327,15 @@ function wire(): void {
       const spec = PLANS[plan];
       const price = (OFFER_ACTIVE ? spec.now : spec.was).toFixed(2);
 
-      // With a payment link and no account service, Stripe collects the email on
-      // its own page, so asking for an account first would be a wall in front of
-      // a working checkout. The account gate only stays when there is a project
-      // to sign in to.
+      // A payment link collects the email on Stripe's own page and the webhook
+      // binds the licence to whichever account owns that address, so having a
+      // project configured is no reason to stand between a buyer and a working
+      // checkout. The account path is only better when there is already a
+      // session, because then the licence can be attached without asking anyone
+      // to type the same address twice.
       let link: string | null = null;
       try {
-        link = config === null ? paymentLink(plan) : null;
+        link = session === null ? paymentLink(plan) : null;
       } catch (error) {
         note((error as Error).message, 'error');
         return;
