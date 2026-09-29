@@ -37,7 +37,6 @@ const PLANS: Record<Plan['id'], Plan> = {
   lifetime: { id: 'lifetime', was: 29.99, now: 20.99 },
 };
 
-const DISCOUNT = 0.7;
 const OFFER_ACTIVE = Date.now() < Date.parse(OFFER_ENDS);
 
 
@@ -194,66 +193,135 @@ function restoreSession(): Session | null {
 
 let pendingPlan: Plan['id'] = 'lifetime';
 
-function paymentLink(plan: Plan['id']): string | null {
-  const links: Record<Plan['id'], string | undefined> = {
-    monthly: import.meta.env.VITE_STRIPE_LINK_MONTHLY as string | undefined,
-    annual: import.meta.env.VITE_STRIPE_LINK_ANNUAL as string | undefined,
-    lifetime: import.meta.env.VITE_STRIPE_LINK_LIFETIME as string | undefined,
-  };
-  const url = links[plan];
-  if (typeof url !== 'string' || url.length === 0) return null;
-  if (!/^https:\/\/(buy\.stripe\.com|checkout\.stripe\.com|payment\.stripe\.com)\//.test(url)) {
-    throw new Error(`the ${plan} payment link is not a stripe.com url, refusing to send anyone there`);
-  }
-  return url;
+/**
+ * The crypto coins a buyer can choose from, and the names the gateway uses for
+ * them. The address a buyer sees is generated per payment by the gateway, never
+ * one of ours, so there is no address to get wrong here and no funds sitting in
+ * a wallet that anyone could drain from the browser.
+ */
+const COINS: ReadonlyArray<{ code: string; label: string }> = [
+  { code: 'btc', label: 'Bitcoin' },
+  { code: 'eth', label: 'Ethereum' },
+  { code: 'ltc', label: 'Litecoin' },
+  { code: 'doge', label: 'Dogecoin' },
+  { code: 'sol', label: 'Solana' },
+  { code: 'usdc', label: 'USDC' },
+];
+
+interface CryptoInvoice {
+  paymentId: number;
+  address: string;
+  amount: number;
+  currency: string;
+  order: string;
+  usd: number;
 }
 
-export function hasPaymentLink(plan: Plan['id'] = 'lifetime'): boolean {
-  try {
-    return paymentLink(plan) !== null;
-  } catch {
-    return false;
+function gateway(): { url: string; anonKey: string } {
+  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  if (typeof url !== 'string' || url.length === 0 || typeof anonKey !== 'string' || anonKey.length === 0) {
+    throw new Error('the shop is not configured yet, there is no way to take crypto right now');
   }
+  return { url, anonKey };
 }
 
-async function checkout(): Promise<void> {
-  const plan = pendingPlan;
-  const link = paymentLink(plan);
-
-  // A payment link is the route that always exists, so it is the floor, not the
-  // exception. A buyer who reaches a dead checkout button has already decided
-  // to pay, and a backend that is still waiting on a key is not a reason to
-  // lose the sale.
-  if (config === null || session === null) {
-    if (link === null) throw new Error('no payment route is set for this plan yet');
-    window.location.assign(link);
-    return;
+async function startCrypto(coin: string): Promise<CryptoInvoice> {
+  const { url, anonKey } = gateway();
+  const response = await fetch(`${url}/functions/v1/create-crypto`, {
+    method: 'POST',
+    headers: { apikey: anonKey, 'content-type': 'application/json' },
+    body: JSON.stringify({
+      plan: pendingPlan,
+      payCurrency: coin,
+      ...(session !== null ? { email: session.email } : {}),
+    }),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(String(body?.error ?? 'the crypto gateway refused the request'));
+  if (typeof body?.address !== 'string' || body.address.length === 0) {
+    throw new Error('the crypto gateway did not return a deposit address');
   }
-  try {
-    const response = await fetch(`${config.url}/functions/v1/create-checkout`, {
-      method: 'POST',
-      headers: {
-        apikey: config.anonKey,
-        authorization: `Bearer ${session.accessToken}`,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ plan, discount: OFFER_ACTIVE ? DISCOUNT : 1 }),
+  return body as CryptoInvoice;
+}
+
+/**
+ * Renders the invoice. The buyer needs three things and nothing else: how much
+ * to send, where to send it, and a way to confirm they sent it. Anything extra
+ * on this screen is a chance to lose the sale.
+ */
+function renderInvoice(invoice: CryptoInvoice): void {
+  const view = document.querySelector('[data-view="crypto"]');
+  if (view === null) return;
+
+  const host = view.querySelector('[data-crypto-body]');
+  if (host !== null) {
+    host.innerHTML = '';
+    const amount = document.createElement('div');
+    amount.className = 'crypto-amount';
+    amount.textContent = `${invoice.amount} ${invoice.currency.toUpperCase()}`;
+    const worth = document.createElement('div');
+    worth.className = 'crypto-worth';
+    worth.textContent = `$${invoice.usd.toFixed(2)} for ${pendingPlan}`;
+    const address = document.createElement('code');
+    address.className = 'crypto-address';
+    address.textContent = invoice.address;
+    host.append(amount, worth, address);
+  }
+
+  // No QR code here on purpose. A correct encoder is a few hundred lines of
+  // Reed-Solomon, and a hand rolled one that produces a square nobody can scan is
+  // worse than none: a buyer who cannot read it thinks the payment is broken and
+  // walks away. The address is shown in full, selectable, with a copy button,
+  // which is what a phone camera cannot do better than.
+  const copy = view.querySelector<HTMLButtonElement>('[data-crypto-copy]');
+  if (copy !== null) {
+    copy.addEventListener('click', () => {
+      void navigator.clipboard.writeText(invoice.address).then(
+        () => {
+          copy.textContent = 'copied';
+          window.setTimeout(() => {
+            copy.textContent = 'copy the address';
+          }, 1500);
+        },
+        () => {
+          copy.textContent = 'the clipboard is blocked';
+        },
+      );
     });
-    const body = await response.json();
-    if (!response.ok) throw new Error(String(body?.error ?? 'the payment service refused'));
-    if (typeof body?.url !== 'string' || body.url.length === 0) {
-      throw new Error('the payment service did not return a link');
-    }
-    window.location.assign(body.url);
-    return;
-  } catch (error) {
-    if (link === null) throw error;
-    console.warn(`checkout fell back to the payment link: ${String(error)}`);
-    window.location.assign(link);
+  }
+
+  // Polls the gateway until it says finished. This is only the waiting screen;
+  // the licence is minted by the webhook, never by anything in the browser.
+  const status = view.querySelector<HTMLElement>('[data-crypto-status]');
+  if (status !== null && session !== null) {
+    void watchPayment(invoice.paymentId, status);
   }
 }
 
-
+async function watchPayment(paymentId: number, host: HTMLElement): Promise<void> {
+  const { url, anonKey } = gateway();
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    await new Promise((r) => setTimeout(r, 5000));
+    try {
+      const res = await fetch(`${url}/functions/v1/payment-status?payment=${paymentId}`, {
+        headers: { apikey: anonKey, authorization: `Bearer ${session?.accessToken ?? ''}` },
+      });
+      const body = await res.json();
+      if (body?.status === 'finished') {
+        host.textContent = 'paid. your licence is in the account page.';
+        window.setTimeout(() => {
+          void renderAccount();
+        }, 1200);
+        return;
+      }
+      if (typeof body?.status === 'string') host.textContent = body.status;
+    } catch {
+      host.textContent = 'waiting for the network, the payment is still fine';
+    }
+  }
+  host.textContent = 'still confirming. the licence arrives by email when it lands.';
+}
 
 function show(view: string): void {
   const sheet = document.querySelector<HTMLDialogElement>('[data-sheet]');
@@ -319,40 +387,68 @@ function wire(): void {
     });
   }
 
+  const coins = sheet.querySelector<HTMLElement>('[data-coins]');
+  if (coins !== null) {
+    coins.innerHTML = '';
+    for (const coin of COINS) {
+      const node = document.createElement('button');
+      node.className = 'coin';
+      node.type = 'button';
+      node.dataset.coin = coin.code;
+      node.textContent = coin.label;
+      coins.append(node);
+    }
+  }
+
+  // PayPal is a link, not an integration. The amount is shown as text because a
+  // personal account cannot be told what the buyer is paying for, and the view
+  // says out loud that a person does the rest.
+  const paypal = import.meta.env.VITE_PAYPAL_LINK as string | undefined;
+  if (typeof paypal === 'string' && /^https:\/\/(www\.)?paypal\.me\//.test(paypal)) {
+    const link = sheet.querySelector<HTMLAnchorElement>('[data-paypal-link]');
+    if (link !== null) link.href = paypal;
+    const amount = sheet.querySelector<HTMLElement>('[data-paypal-amount]');
+    if (amount !== null) {
+      const spec = PLANS[pendingPlan];
+      amount.textContent = `$${(OFFER_ACTIVE ? spec.now : spec.was).toFixed(2)}`;
+    }
+    const ghost = document.createElement('button');
+    ghost.className = 'coin';
+    ghost.type = 'button';
+    ghost.textContent = 'PayPal';
+    ghost.addEventListener('click', () => {
+      show('paypal');
+      note('write us from the same email after you pay');
+    });
+    coins?.append(ghost);
+  }
+
   for (const node of document.querySelectorAll<HTMLElement>('[data-buy]')) {
     node.addEventListener('click', () => {
       const plan = node.dataset.buy as Plan['id'] | undefined;
       if (plan === undefined) return;
       pendingPlan = plan;
-      const spec = PLANS[plan];
-      const price = (OFFER_ACTIVE ? spec.now : spec.was).toFixed(2);
 
-      // A payment link collects the email on Stripe's own page and the webhook
-      // binds the licence to whichever account owns that address, so having a
-      // project configured is no reason to stand between a buyer and a working
-      // checkout. The account path is only better when there is already a
-      // session, because then the licence can be attached without asking anyone
-      // to type the same address twice.
-      let link: string | null = null;
-      try {
-        link = session === null ? paymentLink(plan) : null;
-      } catch (error) {
-        note((error as Error).message, 'error');
-        return;
-      }
-      if (link !== null) {
-        window.location.assign(link);
-        return;
-      }
+      // An account is worth having and is not worth making people wait for. The
+      // licence is minted from the payment webhook, and the webhook binds it to
+      // the account by the email, so a guest who pays now can claim it later
+      // instead of being turned away at the door.
+      show('coins');
+      note('Pick a coin. The address appears with the exact amount to send.');
+    });
+  }
 
-      if (session === null) {
-        show('signup');
-        note('Create the account, then you pay. The licence lands in it.');
-        return;
-      }
-      show('pay');
-      const lede = sheet.querySelector<HTMLElement>('[data-pay-lede]');
-      if (lede !== null) lede.textContent = `You are about to pay $${price} for the ${spec.id} plan.`;
+  for (const node of document.querySelectorAll<HTMLElement>('[data-coin]')) {
+    node.addEventListener('click', () => {
+      const coin = node.dataset.coin ?? '';
+      note('creating the invoice');
+      void startCrypto(coin)
+        .then((invoice) => {
+          show('crypto');
+          renderInvoice(invoice);
+          note('send exactly this amount to the address below');
+        })
+        .catch((error: Error) => note(error.message, 'error'));
     });
   }
 
@@ -370,10 +466,6 @@ function wire(): void {
     sheet.close();
   });
 
-  sheet.querySelector('[data-checkout]')?.addEventListener('click', () => {
-    note('opening Stripe');
-    void checkout().catch((error: Error) => note(error.message, 'error'));
-  });
   const signup = sheet.querySelector<HTMLFormElement>('[data-signup]');
   signup?.addEventListener('submit', (event) => {
     event.preventDefault();

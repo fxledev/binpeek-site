@@ -326,9 +326,10 @@
         <details>
           <summary>How is the download gated?</summary>
           <p>
-            A payment through Stripe mints a signed, expiring token with a download count
-            attached, and that token is what unlocks the file. There is no account database
-            to compromise, which is also why there is no password to leak.
+            A payment mints a signed, expiring token with a download count attached, and that
+            token is what unlocks the file. The signature is checked on your machine against a
+            public key that is baked into the app, so nothing you run has to ask anyone whether
+            you paid, and there is no server in the loop at every launch.
           </p>
         </details>
         <details>
@@ -412,16 +413,47 @@
           </div>
         </div>
 
-        <div data-view="pay" hidden>
-          <h3>One last step</h3>
-          <p class="sheet-lede" data-pay-lede></p>
+        <div data-view="coins" hidden>
+          <h3>Pay with crypto</h3>
+          <p class="sheet-lede">
+            Pick a coin. The address is generated for your order and the licence is issued by the payment
+            webhook, not by this page.
+          </p>
           <p class="sheet-note" data-note></p>
+          <div class="coin-row" data-coins></div>
           <div class="sheet-actions">
-            <button class="btn btn-primary" data-checkout type="button">Go to secure payment</button>
             <button class="btn btn-ghost" data-switch="account" type="button">Back</button>
           </div>
+        </div>
+
+        <div data-view="crypto" hidden>
+          <h3>Send exactly this</h3>
+          <div data-crypto-body></div>
+          <p class="sheet-note" data-crypto-status>waiting for the payment</p>
+          <div class="sheet-actions">
+            <button class="btn btn-primary" data-crypto-copy type="button">copy the address</button>
+            <button class="btn btn-ghost" data-switch="coins" type="button">Change coin</button>
+          </div>
           <p class="sheet-fine">
-            Payment is handled by Stripe. This page never sees your card.
+            The address is unique to this order. Sending from an exchange can take longer than the
+            confirmations we wait for.
+          </p>
+        </div>
+
+        <div data-view="paypal" hidden>
+          <h3>Pay with PayPal</h3>
+          <p class="sheet-lede">
+            Send <strong data-paypal-amount></strong> to our PayPal, then write us from the same address you
+            will claim the licence with. It is a person on the other end, not a robot.
+          </p>
+          <p class="sheet-note" data-note></p>
+          <div class="sheet-actions">
+            <a class="btn btn-primary" data-paypal-link rel="noopener" target="_blank">Open PayPal</a>
+            <button class="btn btn-ghost" data-switch="coins" type="button">Back</button>
+          </div>
+          <p class="sheet-fine">
+            This account has no API, so nothing is issued automatically. Write to
+            support@binpeek.dev with the payment receipt and the licence is minted for you.
           </p>
         </div>
       </div>

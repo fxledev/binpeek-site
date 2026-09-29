@@ -870,6 +870,58 @@ a {
   margin-top: 1rem;
 }
 
+.coin-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 0.25rem;
+}
+
+.coin {
+  appearance: none;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  background: color-mix(in oklab, var(--panel) 88%, transparent);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.9rem;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.coin:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.crypto-amount {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.6rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  margin-top: 0.75rem;
+}
+
+.crypto-worth {
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.crypto-address {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 0.6rem;
+  background: color-mix(in oklab, var(--panel) 70%, transparent);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  padding: 0.7rem 0.8rem;
+  user-select: all;
+}
+
 .sheet-fine {
   margin: 1.2rem 0 0;
   font-size: 0.76rem;
