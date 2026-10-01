@@ -400,29 +400,6 @@ function wire(): void {
     }
   }
 
-  // PayPal is a link, not an integration. The amount is shown as text because a
-  // personal account cannot be told what the buyer is paying for, and the view
-  // says out loud that a person does the rest.
-  const paypal = import.meta.env.VITE_PAYPAL_LINK as string | undefined;
-  if (typeof paypal === 'string' && /^https:\/\/(www\.)?paypal\.me\//.test(paypal)) {
-    const link = sheet.querySelector<HTMLAnchorElement>('[data-paypal-link]');
-    if (link !== null) link.href = paypal;
-    const amount = sheet.querySelector<HTMLElement>('[data-paypal-amount]');
-    if (amount !== null) {
-      const spec = PLANS[pendingPlan];
-      amount.textContent = `$${(OFFER_ACTIVE ? spec.now : spec.was).toFixed(2)}`;
-    }
-    const ghost = document.createElement('button');
-    ghost.className = 'coin';
-    ghost.type = 'button';
-    ghost.textContent = 'PayPal';
-    ghost.addEventListener('click', () => {
-      show('paypal');
-      note('write us from the same email after you pay');
-    });
-    coins?.append(ghost);
-  }
-
   for (const node of document.querySelectorAll<HTMLElement>('[data-buy]')) {
     node.addEventListener('click', () => {
       const plan = node.dataset.buy as Plan['id'] | undefined;

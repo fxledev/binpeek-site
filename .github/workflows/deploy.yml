@@ -25,14 +25,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
-      # The account endpoint and the paypal link are read at build time and baked
-      # into the bundle. Without this the site builds clean, deploys clean, and
-      # the buy button has nowhere to go.
+      # The account endpoint is read at build time and baked into the bundle.
+      # Without this the site builds clean, deploys clean, and the account page
+      # has nowhere to go.
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_PAYPAL_LINK: ${{ secrets.VITE_PAYPAL_LINK }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
